@@ -1,0 +1,12 @@
+---
+title: "Las Vegas Hotel Analysis"
+output: html_notebook
+---
+
+
+```{r}
+hotel_review_df <- read.csv("LasVegasTripAdvisorReviews-Dataset.csv", sep = ";")
+
+View(hotel_review_df)
+```
+
