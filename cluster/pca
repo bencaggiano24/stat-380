@@ -1,0 +1,107 @@
+---
+title: "Project dimentionality reduction and clustering"
+output: html_notebook
+author: Sarvjot Baxi
+---
+
+```{r}
+library(readr)
+library(babynames) 
+library(dplyr)
+library(mdsr)
+library(nycflights13)
+library(tidyverse)
+library(stringr)
+library(mosaicData)
+library(lubridate)
+library(ggpubr)
+library(Lahman)
+library(purrr)
+library(MASS)
+library(car)
+library(boot)
+library(ape)
+library(NbClust)
+library(devtools)
+library(ggbiplot)
+library(cluster)
+```
+
+### Just prepping stuff
+```{r}
+# try to figure out data path way of loading data
+LasVegasTripAdvisorReviews.Dataset <- read.csv("C:/Users/Sarvjot Baxi/Desktop/copy/STAT 380/project/LasVegasTripAdvisorReviews-Dataset.csv", sep=";")
+data1 <- LasVegasTripAdvisorReviews.Dataset
+```
+
+```{r}
+# getting a table just for numbers
+justNumbers <- data1 %>% dplyr::select(Nr..reviews,Nr..hotel.reviews , Helpful.votes , Score , Hotel.stars , Member.years)
+# hotel stars is char not int
+justNumbers$Hotel.stars <- as.numeric(justNumbers$Hotel.stars)
+
+justNumbers <- na.omit(justNumbers)
+sum(is.na(justNumbers))
+```
+
+```{r}
+data1
+```
+
+### dimentionality reduction with pca
+### data prep
+```{r}
+reduced <- LasVegasTripAdvisorReviews.Dataset[,c('User.country','Hotel.stars'  ,'Helpful.votes' , 'Nr..reviews', 'Nr..hotel.reviews' , "Spa" , 'Casino' , 'Free.internet') ]
+
+reduced$Hotel.stars <- as.numeric(reduced$Hotel.stars)
+
+#rownames(reduced) <- reduced[1]
+```
+### pca
+```{r}
+reduced <- na.omit(reduced)
+sum(is.na(reduced))
+reduced.pca <- prcomp(reduced[,c('Hotel.stars'  ,'Helpful.votes' , 'Nr..reviews', 'Nr..hotel.reviews')] , center = TRUE,scale. = TRUE)
+summary(reduced.pca)
+```
+### scree plot to see how many pc's we need 
+```{r}
+var_explained = reduced.pca$sdev^2 / sum(reduced.pca$sdev^2)
+qplot(c(1:4), var_explained) + 
+  geom_line() + 
+  xlab("Principal Component") + 
+  ylab("Variance Explained") +
+  ggtitle("Scree Plot") +
+  ylim(0, 1)
+print(1-var_explained)
+```
+
+```{r}
+p<-ggbiplot(reduced.pca)
+p + expand_limits(x=c(-7:1),y = c(1, 4) , lables=reduced[1]) 
+```
+### clustering according to country
+```{r}
+clustdata <- reduced[2:5]
+model=kmeans(clustdata,2)
+b<-clusplot(clustdata,model$cluster,color=T,shade=T)
+```
+
+```{r}
+summary(model)
+str(model)
+model$centers
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
